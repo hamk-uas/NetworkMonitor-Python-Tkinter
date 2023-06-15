@@ -11,6 +11,16 @@ class SpeedMonitorApp:
         self.window.geometry("1000x600")
         self.window.resizable(width=False, height=True)
 
+        # Dark theme
+        self.style = ThemedStyle(self.window)
+        self.style.theme_use("equilux")
+
+        # Styling for button and headers
+        self.style.configure("TButton", foreground="#228fdd", font=('Arial', 11, "normal"))
+        self.style.configure("Treeview.Heading", foreground="#228fdd", font=('Arial', 10, "normal"))
+        self.style.configure("Treeview", background="#353334", foreground="#d7d6d6")
+        self.window.configure(bg="#353334")
+
         # Creating treeview
         self.tree = ttk.Treeview(self.window, columns=("Process", "Upload speed", "Download speed", "Upload Usage", "Download Usage", "Total Usage"), show="headings")
         self.tree.heading("Process", text="Process")
