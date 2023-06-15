@@ -51,6 +51,37 @@ class SpeedMonitorApp:
         elif TB <= B:
             return f"{B/TB:.2f} TB"
 
+    # Updating treeview
+    def update_tree(self):
+        if not self.is_measuring:
+            return
+
+        counters = psutil.net_io_counters(pernic=True)
+        processes = psutil.process_iter(['pid', 'name'])
+        process_data = {}
+
+        for process in processes:
+            pid = process.info['pid']
+            name = process.info['name']
+            process_data[pid] = {
+                'name': name,
+                'upload_speed': 0,
+                'down_speed': 0,
+                'upload_size': 0,
+                'down_size': 0,
+            }
+
+        for interface, counter in counters.items():
+            for conn in psutil.net_connections():
+                pid = conn.pid
+                if pid in process_data and (counter.bytes_sent - self.last_counters[interface].bytes_sent > 0 or counter.bytes_recv - self.last_counters[interface].bytes_recv > 0):
+                    process_data[pid]['upload_speed'] += counter.bytes_sent - self.last_counters[interface].bytes_sent
+                    process_data[pid]['down_speed'] += counter.bytes_recv - self.last_counters[interface].bytes_recv
+                    process_data[pid]['upload_size'] += counter.bytes_sent
+                    process_data[pid]['down_size'] += counter.bytes_recv
+
+        self.last_counters = counters
+
     def run(self):
         self.window.mainloop()
 
