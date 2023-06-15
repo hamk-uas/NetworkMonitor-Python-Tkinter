@@ -117,6 +117,19 @@ class SpeedMonitorApp:
 
         self.window.after(self.refresh_delay, self.update_tree)
 
+    # Function to start measuring
+    def start_measuring(self):
+        self.is_measuring = True
+        self.start_button.config(state="disabled")
+        self.stop_button.config(state="normal")
+        self.update_tree()
+
+    # Function to stop measuring
+    def stop_measuring(self):
+        self.is_measuring = False
+        self.start_button.config(state="normal")
+        self.stop_button.config(state="disabled")
+
     def run(self):
         self.window.mainloop()
 
