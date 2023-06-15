@@ -32,6 +32,20 @@ class SpeedMonitorApp:
 
         self.data = []  # Displayed data
 
+        # Frame for the buttons
+        self.button_frame = ttk.Frame(self.window)
+        self.button_frame.pack(pady=10)
+
+        # Start button
+        self.start_button = ttk.Button(self.button_frame, text="Start Measuring", command=self.start_measuring)
+        self.start_button.pack(side="left", padx=5)
+
+        # End button
+        self.stop_button = ttk.Button(self.button_frame, text="Stop Measuring", command=self.stop_measuring, state="disabled")
+        self.stop_button.pack(side="left", padx=5)
+
+        self.is_measuring = False  # Flag to track measuring state
+
     # Converting bytes to other units
     def size(self, B):
         B = float(B)
@@ -81,6 +95,27 @@ class SpeedMonitorApp:
                     process_data[pid]['down_size'] += counter.bytes_recv
 
         self.last_counters = counters
+
+        # Updating the data list instead of deleting and inserting new values
+        for pid, data in process_data.items():
+            if data['upload_speed'] > 0 or data['down_speed'] > 0:
+                process_name = f"{data['name']} (PID: {pid})"
+                upload_speed = self.size(data['upload_speed']) + "/s"
+                download_speed = self.size(data['down_speed']) + "/s"
+                upload = self.size(data['upload_size'])
+                download = self.size(data['down_size'])
+                total_usage = self.size(data['upload_size'] + data['down_size'])
+                if pid in self.data:
+                    # Updating existing data
+                    item = next((item for item in self.tree.get_children() if self.tree.item(item, "values")[0].endswith(f"(PID: {pid})")), None)
+                    if item:
+                        self.tree.item(item, values=(process_name, upload_speed, download_speed, upload, download, total_usage))
+                else:
+                    # Insert new data
+                    self.tree.insert("", "end", values=(process_name, upload_speed, download_speed, upload, download, total_usage))
+                    self.data.append(pid)
+
+        self.window.after(self.refresh_delay, self.update_tree)
 
     def run(self):
         self.window.mainloop()
